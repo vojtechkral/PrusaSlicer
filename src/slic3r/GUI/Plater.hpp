@@ -42,6 +42,7 @@ class ObjectLayers;
 class ObjectList;
 class GLCanvas3D;
 class Mouse3DController;
+class NotificationManager;
 
 using t_optgroups = std::vector <std::shared_ptr<ConfigOptionsGroup>>;
 
@@ -277,6 +278,9 @@ public:
     const Camera& get_camera() const;
     const Mouse3DController& get_mouse3d_controller() const;
     Mouse3DController& get_mouse3d_controller();
+
+	const NotificationManager* get_notification_manager() const;
+	NotificationManager* get_notification_manager();
 
 	// ROII wrapper for suppressing the Undo / Redo snapshot to be taken.
 	class SuppressSnapshots
