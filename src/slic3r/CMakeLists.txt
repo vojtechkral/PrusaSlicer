@@ -142,6 +142,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/PrintHostDialogs.hpp
     GUI/Mouse3DController.cpp
     GUI/Mouse3DController.hpp
+    GUI/NotificationManager.cpp
+    GUI/NotificationManager.hpp
     Utils/Http.cpp
     Utils/Http.hpp
     Utils/FixModelByWin10.cpp
