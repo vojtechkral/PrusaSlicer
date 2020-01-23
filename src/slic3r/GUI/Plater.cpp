@@ -85,6 +85,7 @@
 
 #include <wx/glcanvas.h>    // Needs to be last because reasons :-/
 #include "WipeTowerDialog.hpp"
+#include "libslic3r/CustomGCode.hpp"
 
 using boost::optional;
 namespace fs = boost::filesystem;
@@ -4678,7 +4679,7 @@ void Plater::remove(size_t obj_idx) { p->remove(obj_idx); }
 void Plater::reset() { p->reset(); }
 void Plater::reset_with_confirm()
 {
-    if (wxMessageDialog((wxWindow*)this, _(L("All objects will be removed, continue ?")), wxString(SLIC3R_APP_NAME) + " - " + _(L("Delete all")), wxYES_NO | wxCANCEL | wxYES_DEFAULT | wxCENTRE).ShowModal() == wxID_YES)
+    if (wxMessageDialog((wxWindow*)this, _(L("All objects will be removed, continue?")), wxString(SLIC3R_APP_NAME) + " - " + _(L("Delete all")), wxYES_NO | wxCANCEL | wxYES_DEFAULT | wxCENTRE).ShowModal() == wxID_YES)
         reset();
 }
 
@@ -5433,7 +5434,7 @@ std::vector<std::string> Plater::get_colors_for_color_print() const
     std::vector<std::string> colors = get_extruder_colors_from_plater_config();
     colors.reserve(colors.size() + p->model.custom_gcode_per_print_z.gcodes.size());
 
-    for (const Model::CustomGCode& code : p->model.custom_gcode_per_print_z.gcodes)
+    for (const CustomGCode::Item& code : p->model.custom_gcode_per_print_z.gcodes)
         if (code.gcode == ColorChangeCode)
             colors.emplace_back(code.color);
 
