@@ -202,7 +202,96 @@ bool OpenGLVersionCheck::message_pump_exit = false;
 #endif /* SLIC3R_GUI */
 
 
+const UINT messageId =  RegisterWindowMessage(L"PrusaSlicer");
+//catching message from another instance
+LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
+{
+	switch (message)
+	{
+	case WM_COPYDATA:
+	{
+		COPYDATASTRUCT* copy_data_structure = { 0 };
+		copy_data_structure = (COPYDATASTRUCT*)lParam;
+
+		if (copy_data_structure->dwData == messageId)
+		{
+			//Extract the information from the created structure and forward the information to UI
+			LPCWSTR arguments = (LPCWSTR)copy_data_structure->lpData;
+
+			//Set the focus on the main instance
+			//SetForegroundWindow(hWnd);
+			//ShowWindow(hWnd, SW_NORMAL);
+			std::wcout << L"Got message " << arguments << std::endl;
+			return true;
+		}
+	}
+		break;
+	}
+	return false;
+}
+
+
+void create_listener_window()
+{
+	WNDCLASSEX wndClass;
+	wndClass.cbSize = sizeof(WNDCLASSEX);
+	wndClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+	wndClass.hInstance = reinterpret_cast<HINSTANCE>(GetModuleHandle(0));
+	wndClass.lpfnWndProc = reinterpret_cast<WNDPROC>(WndProc);//this is callback
+	wndClass.cbClsExtra = 0;
+	wndClass.cbWndExtra = 0;
+	wndClass.hIcon = LoadIcon(0, IDI_APPLICATION);
+	wndClass.hbrBackground = CreateSolidBrush(RGB(192, 192, 192));
+	wndClass.hCursor = LoadCursor(0, IDC_ARROW);
+	wndClass.lpszClassName = L"PrusaSlicer_single_instance_listener_class";
+	wndClass.lpszMenuName = NULL;
+	wndClass.hIconSm = wndClass.hIcon;
+	if(!RegisterClassEx(&wndClass))
+	{
+		DWORD err = GetLastError();
+		return;
+	}
+
+	HWND hWnd = CreateWindowEx(
+		WS_EX_NOACTIVATE,
+		L"PrusaSlicer_single_instance_listener_class",
+		L"PrusaSlicer_listener_window",
+		WS_DISABLED, // style
+		CW_USEDEFAULT, 0,
+		640, 480,
+		NULL, NULL,
+		GetModuleHandle(NULL),
+		NULL);
+	if(hWnd == NULL)
+	{
+		DWORD err = GetLastError();
+	}
+	//ShowWindow(hWnd, SW_SHOWNORMAL);
+	UpdateWindow(hWnd);
+	
+}
+
+
+void send_message(const HWND hwnd)
+{
+	LPWSTR command_line_args = GetCommandLine();
+
+	//Create a COPYDATASTRUCT to send the information
+	//cbData represents the size of the information we want to send.
+	//lpData represents the information we want to send.
+	//dwData is an ID defined by us(this is a type of ID different than WM_COPYDATA).
+	COPYDATASTRUCT data_to_send = { 0 };
+	data_to_send.dwData = messageId;
+	data_to_send.cbData = (DWORD)(wcslen(command_line_args) + 1);
+	data_to_send.lpData = command_line_args;
+
+	SendMessage(hwnd, WM_COPYDATA, 0, (LPARAM)&data_to_send);
+}
+
 BOOL CALLBACK EnumWindowsProc(_In_ HWND   hwnd, _In_ LPARAM lParam){
+	//checks for other instances of prusaslicer, if found brings it to front and return false to stop enumeration and quit this instance
+	//search is done by classname(wxWindowNR is wxwidgets thing, so probably not unique) and name in window upper panel
+	//other option would be do a mutex and check for its existence
 	TCHAR wndText[1000];
 	TCHAR className[1000];
 	GetClassName(hwnd, className, 1000);
@@ -213,6 +302,7 @@ BOOL CALLBACK EnumWindowsProc(_In_ HWND   hwnd, _In_ LPARAM lParam){
 		std::wcout << L"found " << wndTextString << std::endl;
 		ShowWindow(hwnd,SW_SHOWMAXIMIZED);
 		SetForegroundWindow(hwnd);
+		send_message(hwnd);
 		return false;
 	}
 	return true;
@@ -237,8 +327,12 @@ int wmain(int argc, wchar_t **argv)
 	
 	if(!EnumWindows(EnumWindowsProc,0)){
 		printf("Another instance of PrusaSlicer is already running.\n");
+		LPWSTR command_line_args = GetCommandLine();
+		std::wcout << L"command line: " << command_line_args << std::endl;
 		return -1;
 	}
+
+	create_listener_window();
 
     std::vector<wchar_t*> argv_extended;
     argv_extended.emplace_back(argv[0]);
