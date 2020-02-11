@@ -6,6 +6,7 @@
 #include <Windows.h>
 #include <shellapi.h>
 #include <wchar.h>
+#include <iostream>
 
 #ifdef SLIC3R_GUI
 extern "C"
@@ -200,6 +201,23 @@ protected:
 bool OpenGLVersionCheck::message_pump_exit = false;
 #endif /* SLIC3R_GUI */
 
+
+BOOL CALLBACK EnumWindowsProc(_In_ HWND   hwnd, _In_ LPARAM lParam){
+	TCHAR wndText[1000];
+	TCHAR className[1000];
+	GetClassName(hwnd, className, 1000);
+	GetWindowText(hwnd, wndText, 1000);
+	std::wstring classNameString(className);
+	std::wstring wndTextString(wndText);
+	if (wndTextString.find(L"PrusaSlicer") != std::wstring::npos && classNameString == L"wxWindowNR") {
+		std::wcout << L"found " << wndTextString << std::endl;
+		ShowWindow(hwnd,SW_SHOWMAXIMIZED);
+		SetForegroundWindow(hwnd);
+		return false;
+	}
+	return true;
+}
+
 extern "C" {
     typedef int (__stdcall *Slic3rMainFunc)(int argc, wchar_t **argv);
     Slic3rMainFunc slic3r_main = nullptr;
@@ -216,6 +234,11 @@ int APIENTRY wWinMain(HINSTANCE /* hInstance */, HINSTANCE /* hPrevInstance */, 
 int wmain(int argc, wchar_t **argv)
 {
 #endif
+	
+	if(!EnumWindows(EnumWindowsProc,0)){
+		printf("Another instance of PrusaSlicer is already running.\n");
+		return -1;
+	}
 
     std::vector<wchar_t*> argv_extended;
     argv_extended.emplace_back(argv[0]);
