@@ -206,6 +206,8 @@ bool OpenGLVersionCheck::message_pump_exit = false;
 //catching message from another instance
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
+	TCHAR lpClassName[1000];
+	GetClassName(hWnd, lpClassName, 100);
 	switch (message)
 	{
 	case WM_COPYDATA:
@@ -222,18 +224,17 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 			//SetForegroundWindow(hWnd);
 			//ShowWindow(hWnd, SW_NORMAL);
 			std::wcout << L"Got message " << arguments << std::endl;
-			return true;
 		//}
 	}
 		break;
 	}
-	return false;
+	return DefWindowProc(hWnd, message, wParam, lParam);
 }
 
 
 void create_listener_window()
 {
-	WNDCLASSEX wndClass;
+	WNDCLASSEX wndClass = {0};
 	wndClass.cbSize = sizeof(WNDCLASSEX);
 	wndClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
 	wndClass.hInstance = reinterpret_cast<HINSTANCE>(GetModuleHandle(0));
@@ -253,21 +254,25 @@ void create_listener_window()
 	}
 
 	HWND hWnd = CreateWindowEx(
-		WS_EX_NOACTIVATE,
+		0,//WS_EX_NOACTIVATE,
 		L"PrusaSlicer_single_instance_listener_class",
 		L"PrusaSlicer_listener_window",
-		WS_DISABLED, // style
-		CW_USEDEFAULT, 0,
-		640, 480,
+		WS_OVERLAPPEDWINDOW,//WS_DISABLED, // style
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
+		CW_USEDEFAULT,
 		NULL, NULL,
 		GetModuleHandle(NULL),
 		NULL);
 	if(hWnd == NULL)
 	{
 		DWORD err = GetLastError();
+	}else
+	{
+		ShowWindow(hWnd, SW_SHOWNORMAL);
+		UpdateWindow(hWnd);
 	}
-	ShowWindow(hWnd, SW_SHOWNORMAL);
-	UpdateWindow(hWnd);
 	//std::cout << "message id: " << messageId << std::endl;
 }
 
@@ -330,7 +335,7 @@ int wmain(int argc, wchar_t **argv)
 		LPWSTR command_line_args = GetCommandLine();
 		std::wcout << L"command line: " << command_line_args << std::endl;
 		HWND hwndListener;
-		if((hwndListener = FindWindow(L"PrusaSlicer_single_instance_listener_class", NULL))!= NULL)
+		if((hwndListener = FindWindow( NULL, L"PrusaSlicer_listener_window"))!= NULL)
 		{
 			send_message(hwndListener);
 		}
@@ -338,6 +343,7 @@ int wmain(int argc, wchar_t **argv)
 	}
 
 	create_listener_window();
+
 
     std::vector<wchar_t*> argv_extended;
     argv_extended.emplace_back(argv[0]);
