@@ -149,6 +149,8 @@ set(SLIC3R_GUI_SOURCES
     GUI/DoubleSlider.hpp
     GUI/ObjectDataViewModel.cpp
     GUI/ObjectDataViewModel.hpp
+    GUI/InstanceCheck.cpp
+    GUI/InstanceCheck.hpp
     Utils/Http.cpp
     Utils/Http.hpp
     Utils/FixModelByWin10.cpp
