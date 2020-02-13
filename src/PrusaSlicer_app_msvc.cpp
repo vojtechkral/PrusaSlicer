@@ -236,17 +236,17 @@ void create_listener_window()
 {
 	WNDCLASSEX wndClass = {0};
 	wndClass.cbSize = sizeof(WNDCLASSEX);
-	wndClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
+	//wndClass.style = CS_OWNDC | CS_HREDRAW | CS_VREDRAW;
 	wndClass.hInstance = reinterpret_cast<HINSTANCE>(GetModuleHandle(0));
 	wndClass.lpfnWndProc = reinterpret_cast<WNDPROC>(WndProc);//this is callback
-	wndClass.cbClsExtra = 0;
-	wndClass.cbWndExtra = 0;
-	wndClass.hIcon = LoadIcon(0, IDI_APPLICATION);
-	wndClass.hbrBackground = CreateSolidBrush(RGB(192, 192, 192));
-	wndClass.hCursor = LoadCursor(0, IDC_ARROW);
+	//wndClass.cbClsExtra = 0;
+	//wndClass.cbWndExtra = 0;
+	//wndClass.hIcon = LoadIcon(0, IDI_APPLICATION);
+	//wndClass.hbrBackground = CreateSolidBrush(RGB(192, 192, 192));
+	//wndClass.hCursor = LoadCursor(0, IDC_ARROW);
 	wndClass.lpszClassName = L"PrusaSlicer_single_instance_listener_class";
-	wndClass.lpszMenuName = NULL;
-	wndClass.hIconSm = wndClass.hIcon;
+	//wndClass.lpszMenuName = NULL;
+	//wndClass.hIconSm = wndClass.hIcon;
 	if(!RegisterClassEx(&wndClass))
 	{
 		DWORD err = GetLastError();
@@ -257,7 +257,7 @@ void create_listener_window()
 		0,//WS_EX_NOACTIVATE,
 		L"PrusaSlicer_single_instance_listener_class",
 		L"PrusaSlicer_listener_window",
-		WS_OVERLAPPEDWINDOW,//WS_DISABLED, // style
+		/*WS_OVERLAPPEDWINDOW,*/WS_DISABLED, // style
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
 		CW_USEDEFAULT,
@@ -270,7 +270,7 @@ void create_listener_window()
 		DWORD err = GetLastError();
 	}else
 	{
-		ShowWindow(hWnd, SW_SHOWNORMAL);
+		//ShowWindow(hWnd, SW_SHOWNORMAL);
 		UpdateWindow(hWnd);
 	}
 	//std::cout << "message id: " << messageId << std::endl;
@@ -333,7 +333,6 @@ int wmain(int argc, wchar_t **argv)
 	if(!EnumWindows(EnumWindowsProc,0)){
 		printf("Another instance of PrusaSlicer is already running.\n");
 		LPWSTR command_line_args = GetCommandLine();
-		std::wcout << L"command line: " << command_line_args << std::endl;
 		HWND hwndListener;
 		if((hwndListener = FindWindow( NULL, L"PrusaSlicer_listener_window"))!= NULL)
 		{
