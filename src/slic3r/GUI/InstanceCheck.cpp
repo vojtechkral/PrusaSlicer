@@ -15,8 +15,11 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 	{
 		COPYDATASTRUCT* copy_data_structure = { 0 };
 		copy_data_structure = (COPYDATASTRUCT*)lParam;
-
-		LPCWSTR arguments = (LPCWSTR)copy_data_structure->lpData;
+		if(copy_data_structure->dwData == 1)
+		{
+			LPCWSTR arguments = (LPCWSTR)copy_data_structure->lpData;
+			Slic3r::InstanceCheck::instance_check().handle_message(arguments);
+		}
 		
 	}
 	break;
@@ -39,7 +42,6 @@ BOOL CALLBACK EnumWindowsProc(_In_ HWND   hwnd, _In_ LPARAM lParam) {
 		std::wcout << L"found " << wndTextString << std::endl;
 		ShowWindow(hwnd, SW_SHOWMAXIMIZED);
 		SetForegroundWindow(hwnd);
-
 		return false;
 	}
 	return true;
@@ -109,14 +111,14 @@ void InstanceCheck::create_listener_window() const
 void InstanceCheck::send_message(const HWND hwnd) const
 {
 	LPWSTR command_line_args = GetCommandLine();
-
+	std::wcout << L"Sending message: " << command_line_args << std::endl;
 	//Create a COPYDATASTRUCT to send the information
 	//cbData represents the size of the information we want to send.
 	//lpData represents the information we want to send.
 	//dwData is an ID defined by us(this is a type of ID different than WM_COPYDATA).
 	COPYDATASTRUCT data_to_send = { 0 };
-	//data_to_send.dwData = messageId;
-	data_to_send.cbData = (wcslen(command_line_args) + 1);
+	data_to_send.dwData = 1;
+	data_to_send.cbData = sizeof(TCHAR) * (wcslen(command_line_args) + 1);
 	data_to_send.lpData = command_line_args;
 
 	SendMessage(hwnd, WM_COPYDATA, 0, (LPARAM)&data_to_send);

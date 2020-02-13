@@ -20,11 +20,12 @@ public:
 	~InstanceCheck();
 	//checks for other instances of prusaslicer. If found, sends message and returns true. If not found, creates invisible window for listening and returns false
 	bool check_with_message() const;
+	void handle_message(const std::wstring message) const;
 private:
 	InstanceCheck();
 	void create_listener_window() const;
 	void send_message(const HWND hwnd) const;
-	void handle_message(const std::wstring message) const;
+	
 };
 
 
