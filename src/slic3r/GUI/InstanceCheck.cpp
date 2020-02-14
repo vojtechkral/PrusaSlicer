@@ -3,7 +3,6 @@
 
 //#include "Plater.hpp"
 
-
 #include <boost/filesystem.hpp>
 #include "boost/nowide/convert.hpp"
 #include <iostream>
@@ -140,21 +139,25 @@ void InstanceCheck::handle_message(const std::string message) const
 	std::vector<boost::filesystem::path> paths;
 	auto next_space = message.find(' ');
 	size_t last_space = 0;
+	int counter = 0;
 	while (next_space != std::string::npos)
 	{
 		const std::string possible_path = message.substr(last_space, next_space - last_space);
-		if (boost::filesystem::exists(possible_path)) {
+		if (counter != 0 && boost::filesystem::exists(possible_path)) {
 			paths.push_back(boost::filesystem::path(possible_path));
 		}
 		last_space = next_space;
 		next_space = message.find(' ', last_space + 1);
+		counter++;
 	}
-	const std::string possible_path = message.substr(last_space + 1);
-	if (boost::filesystem::exists(message.substr(last_space + 1))) {
+	//const std::string possible_path = message.substr(last_space + 1);
+	if (counter != 0 && boost::filesystem::exists(message.substr(last_space + 1))) {
 		paths.push_back(boost::filesystem::path(message.substr(last_space)));
 	}
-	GUI::wxGetApp().plater()->load_files(paths, true, false);
-	
+	if(!paths.empty()){
+		Sleep(1000);
+		GUI::wxGetApp().plater()->load_files(paths, true, false);
+	}
 	
 }
 } // namespace Slic3r

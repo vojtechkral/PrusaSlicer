@@ -47,8 +47,6 @@
 #include "KBShortcutsDialog.hpp"
 #include "UpdateDialogs.hpp"
 #include "RemovableDriveManager.hpp"
-#include "InstanceCheck.hpp"
-
 
 #ifdef __WXMSW__
 #include <Shlobj.h>
@@ -183,11 +181,6 @@ bool GUI_App::OnInit()
 
 bool GUI_App::on_init_inner()
 {
-	if (Slic3r::InstanceCheck::instance_check().check_with_message())
-	{
-		return false;
-	}
-	
 
     // Verify resources path
     const wxString resources_dir = from_u8(Slic3r::resources_dir());

@@ -6,8 +6,6 @@
 #include <string>
 
 
-
-
 namespace Slic3r {
 
 class InstanceCheck
