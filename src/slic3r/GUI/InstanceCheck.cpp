@@ -1,9 +1,16 @@
+#include "GUI_App.hpp"
 #include "InstanceCheck.hpp"
 
+//#include "Plater.hpp"
 
+
+#include <boost/filesystem.hpp>
+#include "boost/nowide/convert.hpp"
 #include <iostream>
 
-//onst UINT messageId =  RegisterWindowMessage(L"PrusaSlicer");
+
+
+
 //catching message from another instance
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
@@ -18,7 +25,7 @@ LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 		if(copy_data_structure->dwData == 1)
 		{
 			LPCWSTR arguments = (LPCWSTR)copy_data_structure->lpData;
-			Slic3r::InstanceCheck::instance_check().handle_message(arguments);
+			Slic3r::InstanceCheck::instance_check().handle_message(boost::nowide::narrow(arguments));
 		}
 		
 	}
@@ -48,7 +55,7 @@ BOOL CALLBACK EnumWindowsProc(_In_ HWND   hwnd, _In_ LPARAM lParam) {
 }
 
 namespace Slic3r {
-InstanceCheck::InstanceCheck() {}
+InstanceCheck::InstanceCheck(){}
 InstanceCheck::~InstanceCheck(){}
 
 bool InstanceCheck::check_with_message() const
@@ -68,7 +75,7 @@ bool InstanceCheck::check_with_message() const
 	}
 
 	create_listener_window();
-
+	
 	return false;
 }
 
@@ -124,8 +131,30 @@ void InstanceCheck::send_message(const HWND hwnd) const
 	SendMessage(hwnd, WM_COPYDATA, 0, (LPARAM)&data_to_send);
 }
 
-void InstanceCheck::handle_message(const std::wstring message) const
+void InstanceCheck::handle_message(const std::string message) const
 {
-	std::wcout << L"Got message " << message << std::endl;
+	//CALL THIS?
+	//Plater::load_files(const std::vector<fs::path> & input_files, bool load_model, bool load_config)
+	std::cout << "New message: " << message << std::endl;
+
+	std::vector<boost::filesystem::path> paths;
+	auto next_space = message.find(' ');
+	size_t last_space = 0;
+	while (next_space != std::string::npos)
+	{
+		const std::string possible_path = message.substr(last_space, next_space - last_space);
+		if (boost::filesystem::exists(possible_path)) {
+			paths.push_back(boost::filesystem::path(possible_path));
+		}
+		last_space = next_space;
+		next_space = message.find(' ', last_space + 1);
+	}
+	const std::string possible_path = message.substr(last_space + 1);
+	if (boost::filesystem::exists(message.substr(last_space + 1))) {
+		paths.push_back(boost::filesystem::path(message.substr(last_space)));
+	}
+	GUI::wxGetApp().plater()->load_files(paths, true, false);
+	
+	
 }
 } // namespace Slic3r

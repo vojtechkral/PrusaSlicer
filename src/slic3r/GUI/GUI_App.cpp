@@ -185,8 +185,10 @@ bool GUI_App::on_init_inner()
 {
 	if (Slic3r::InstanceCheck::instance_check().check_with_message())
 	{
-		return -1;
+		return false;
 	}
+	
+
     // Verify resources path
     const wxString resources_dir = from_u8(Slic3r::resources_dir());
     wxCHECK_MSG(wxDirExists(resources_dir), false,
@@ -301,6 +303,7 @@ bool GUI_App::on_init_inner()
 				preset_updater->slic3r_update_notify();
 				preset_updater->sync(preset_bundle);
 				});
+
         }
     });
 
