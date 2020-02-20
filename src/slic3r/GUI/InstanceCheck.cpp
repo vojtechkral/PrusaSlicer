@@ -7,6 +7,7 @@
 #include "boost/nowide/convert.hpp"
 #include <iostream>
 
+#include <boost/log/trivial.hpp>
 
 
 
@@ -132,9 +133,8 @@ void InstanceCheck::send_message(const HWND hwnd) const
 
 void InstanceCheck::handle_message(const std::string message) const
 {
-	//CALL THIS?
-	//Plater::load_files(const std::vector<fs::path> & input_files, bool load_model, bool load_config)
-	std::cout << "New message: " << message << std::endl;
+
+	/*BOOST_LOG_TRIVIAL(info)*/ std::cout << "New message: " << message << std::endl;
 
 	std::vector<boost::filesystem::path> paths;
 	auto next_space = message.find(' ');
@@ -152,11 +152,11 @@ void InstanceCheck::handle_message(const std::string message) const
 	}
 	//const std::string possible_path = message.substr(last_space + 1);
 	if (counter != 0 && boost::filesystem::exists(message.substr(last_space + 1))) {
-		paths.push_back(boost::filesystem::path(message.substr(last_space)));
+		paths.push_back(boost::filesystem::path(message.substr(last_space + 1)));
 	}
 	if(!paths.empty()){
 		Sleep(1000);
-		GUI::wxGetApp().plater()->load_files(paths, true, false);
+		GUI::wxGetApp().plater()->load_files(paths, true, true);
 	}
 	
 }
