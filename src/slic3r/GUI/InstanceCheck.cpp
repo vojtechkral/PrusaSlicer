@@ -5,11 +5,11 @@
 
 #include <boost/filesystem.hpp>
 #include "boost/nowide/convert.hpp"
+#include <boost/log/trivial.hpp>
 #include <iostream>
 
-#include <boost/log/trivial.hpp>
 
-
+#if _WIN32
 
 //catching message from another instance
 LRESULT CALLBACK WndProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
@@ -54,10 +54,11 @@ BOOL CALLBACK EnumWindowsProc(_In_ HWND   hwnd, _In_ LPARAM lParam) {
 	return true;
 }
 
-namespace Slic3r {
-InstanceCheck::InstanceCheck(){}
-InstanceCheck::~InstanceCheck(){}
+#endif //_WIN32 
 
+namespace Slic3r {
+
+#if _WIN32
 bool InstanceCheck::check_with_message() const
 {
 	if (!EnumWindows(EnumWindowsProc, 0)) {
@@ -130,6 +131,23 @@ void InstanceCheck::send_message(const HWND hwnd) const
 
 	SendMessage(hwnd, WM_COPYDATA, 0, (LPARAM)&data_to_send);
 }
+#else //linux/macos
+bool InstanceCheck::check_with_message() const
+{
+	return false;
+}
+
+
+void InstanceCheck::send_message(const HWND hwnd) const
+{
+
+}
+#endif //_WIN32 
+
+
+
+InstanceCheck::InstanceCheck() {}
+InstanceCheck::~InstanceCheck() {}
 
 void InstanceCheck::handle_message(const std::string message) const
 {
@@ -155,7 +173,6 @@ void InstanceCheck::handle_message(const std::string message) const
 		paths.push_back(boost::filesystem::path(message.substr(last_space + 1)));
 	}
 	if(!paths.empty()){
-		Sleep(1000);
 		GUI::wxGetApp().plater()->load_files(paths, true, true);
 	}
 	
