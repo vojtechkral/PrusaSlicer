@@ -26,7 +26,6 @@ private:
 	InstanceCheck();
 	void create_listener_window() const;
 	void send_message(const HWND hwnd) const;
-	
 };
 
 
