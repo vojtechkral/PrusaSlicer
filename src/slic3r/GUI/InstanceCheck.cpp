@@ -138,29 +138,7 @@ void InstanceCheck::send_message(const HWND hwnd) const {
 }
 #else //linux/macos
 bool InstanceCheck::check_with_message() const {
-	// lockfile variant from https://arstechnica.com/civis/viewtopic.php?t=42700
-	int fd;
-	struct flock fl;
-	fd = open("LOCK_FILE_PRUSASLICER", O_RDWR);
-	if (fd == -1) {
-		return false;
-	}
-
-	fl.l_type = F_WRLCK;  /* F_RDLCK, F_WRLCK, F_UNLCK    */
-	fl.l_whence = SEEK_SET; /* SEEK_SET, SEEK_CUR, SEEK_END */
-	fl.l_start = 0;        /* Offset from l_whence         */
-	fl.l_len = 0;        /* length, 0 = to EOF           */
-	fl.l_pid = getpid(); /* our PID                      */
-
-    // try to create a file lock
-	if (fcntl(fd, F_SETLK, &fl) == -1)   /* F_GETLK, F_SETLK, F_SETLKW */{
-		// we failed to create a file lock, meaning it's already locked //
-		if (errno == EACCES || errno == EAGAIN){
-			return true;
-		}
-	}
-
-	return false;
+	
 }
 
 
