@@ -27,6 +27,7 @@ public:
 #if _WIN32
 #else
 	void bring_this_instance_forward() const;
+	static void sig_handler(int signo);
 #endif
 private:
 	InstanceCheck();
@@ -37,6 +38,7 @@ private:
 	int get_lock() const;
 	std::string get_pid_string_by_name(std::string procName) const;
 	void send_message(const int pid) const;
+
 #endif
 	
 };

@@ -139,7 +139,7 @@ void InstanceCheck::send_message(const HWND hwnd) const {
 
 #else //linux/macos
 
-void sig_handler(int signo)
+void InstanceCheck::sig_handler(int signo)
 {
 	if (signo == SIGUSR1){
   		printf("received SIGUSR1\n");
@@ -167,7 +167,7 @@ bool InstanceCheck::check_with_message() const {
 	    return true;
 	}
 
-	if (signal(SIGUSR1, sig_handler) == SIG_ERR) {printf("\ncan't catch SIGUSR1\n");}
+	if (signal(SIGUSR1, InstanceCheck::sig_handler) == SIG_ERR) {printf("\ncan't catch SIGUSR1\n");}
 	return false;
 }
 
