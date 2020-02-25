@@ -1,8 +1,10 @@
 #ifndef slic3r_InstanceCheck_hpp_
 #define slic3r_InstanceCheck_hpp_
 
-//windows
+#if _WIN32
 #include <windows.h>
+#endif
+
 #include <string>
 
 
@@ -25,7 +27,13 @@ public:
 private:
 	InstanceCheck();
 	void create_listener_window() const;
+#if _WIN32
 	void send_message(const HWND hwnd) const;
+#else
+	int get_lock() const;
+	void send_message(const int pid) const;
+#endif
+	
 };
 
 
