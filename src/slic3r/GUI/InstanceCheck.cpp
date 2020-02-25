@@ -138,34 +138,111 @@ void InstanceCheck::send_message(const HWND hwnd) const {
 }
 
 #else //linux/macos
+
+void sig_handler(int signo)
+{
+	if (signo == SIGUSR1){
+  		printf("received SIGUSR1\n");
+  		InstanceCheck::instance_check().bring_this_instance_forward();
+ 	}
+   	
+  //signal(signo, sig_handler); 
+}
+
 bool InstanceCheck::check_with_message() const {
-	if(!get_lock())
-	  {
+	if(!get_lock()){
 	    std::cout<<"Process already running!"<< std::endl;
+	    std::string pid_string = get_pid_string_by_name("prusa-slicer");
+	    if (pid_string != "")
+	    {
+	    	std::cout<<"pid "<<pid_string<<std::endl;
+	    	int pid = atoi(pid_string.c_str());
+	    	if(pid > 0)
+	    		kill(pid, SIGUSR1);
+	    	//std::string command = "fg ";
+	    	//command += pid_string;
+	   		//system(command.c_str());
+	    }
 	    
 	    return true;
-	  }
+	}
+
+	if (signal(SIGUSR1, sig_handler) == SIG_ERR) {printf("\ncan't catch SIGUSR1\n");}
 	return false;
 }
 
 int InstanceCheck::get_lock() const
 {
-  struct flock fl;
-  int fdlock;
-  fl.l_type = F_WRLCK;
-  fl.l_whence = SEEK_SET;
-  fl.l_start = 0;
-  fl.l_len = 1;
+ 	struct flock fl;
+  	int fdlock;
+  	fl.l_type = F_WRLCK;
+  	fl.l_whence = SEEK_SET;
+  	fl.l_start = 0;
+  	fl.l_len = 1;
 
-  if((fdlock = open("/tmp/prusaslicer.lock", O_WRONLY|O_CREAT, 0666)) == -1)
-    return 0;
+  	if((fdlock = open("/tmp/prusaslicer.lock", O_WRONLY|O_CREAT, 0666)) == -1)
+    	return 0;
 
-  if(fcntl(fdlock, F_SETLK, &fl) == -1)
-    return 0;
+  	if(fcntl(fdlock, F_SETLK, &fl) == -1)
+    	return 0;
 
-  return 1;
+  	return 1;
 }
 
+std::string InstanceCheck::get_pid_string_by_name(std::string procName) const
+{
+    int pid = -1;
+    std::string pid_string = "";
+    // Open the /proc directory
+    DIR *dp = opendir("/proc");
+    if (dp != NULL)
+    {
+        // Enumerate all entries in directory until process found
+        struct dirent *dirp;
+        while (pid < 0 && (dirp = readdir(dp)))
+        {
+            // Skip non-numeric entries
+            int id = atoi(dirp->d_name);
+            if (id > 0)
+            {
+                // Read contents of virtual /proc/{pid}/cmdline file
+                std::string cmdPath = std::string("/proc/") + dirp->d_name + "/cmdline";
+                std::ifstream cmdFile(cmdPath.c_str());
+                std::string cmdLine;
+                getline(cmdFile, cmdLine);
+                if (!cmdLine.empty())
+                {
+                    // Keep first cmdline item which contains the program path
+                    size_t pos = cmdLine.find('\0');
+                    if (pos != std::string::npos)
+                        cmdLine = cmdLine.substr(0, pos);
+                    // Keep program name only, removing the path
+                    pos = cmdLine.rfind('/');
+                    if (pos != std::string::npos)
+                        cmdLine = cmdLine.substr(pos + 1);
+                    // Compare against requested process name
+                    if (cmdLine.find(procName) != std::string::npos) {
+    					pid = id;
+    					pid_string = dirp->d_name;
+					}    
+                }
+
+            }
+        }
+    }
+
+    closedir(dp);
+
+    return pid_string;
+}
+
+void InstanceCheck::bring_this_instance_forward() const {
+	printf("going forward\n");
+	//GUI::wxGetApp().GetTopWindow()->Iconize(false); // restore the window if minimized
+    GUI::wxGetApp().GetTopWindow()->SetFocus();  // focus on my window
+    GUI::wxGetApp().GetTopWindow()->Raise();  // bring window to front
+   	GUI::wxGetApp().GetTopWindow()->Show(true); // show the window
+}
 void InstanceCheck::send_message(const int pid) const {
 
 }
