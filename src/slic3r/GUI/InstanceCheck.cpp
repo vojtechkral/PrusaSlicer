@@ -137,8 +137,39 @@ void InstanceCheck::send_message(const HWND hwnd) const {
 	SendMessage(hwnd, WM_COPYDATA, 0, (LPARAM)&data_to_send);
 }
 
-#else //linux/macos
+#elif defined(__APPLE__)
 
+bool InstanceCheck::check_with_message() const {
+	if(!get_lock()){
+	    std::cout<<"Process already running!"<< std::endl;  
+	    return true;
+	}
+	return false;
+}
+
+int InstanceCheck::get_lock() const
+{
+ 	struct flock fl;
+  	int fdlock;
+  	fl.l_type = F_WRLCK;
+  	fl.l_whence = SEEK_SET;
+  	fl.l_start = 0;
+  	fl.l_len = 1;
+
+  	if((fdlock = open("/tmp/prusaslicer.lock", O_WRONLY|O_CREAT, 0666)) == -1)
+    	return 0;
+
+  	if(fcntl(fdlock, F_SETLK, &fl) == -1)
+    	return 0;
+
+  	return 1;
+}
+
+void InstanceCheck::send_message(const int pid) const {
+
+}
+
+#elif defined(__linux__)
 void InstanceCheck::sig_handler(int signo)
 {
 	if (signo == SIGUSR1){
@@ -246,7 +277,8 @@ void InstanceCheck::bring_this_instance_forward() const {
 void InstanceCheck::send_message(const int pid) const {
 
 }
-#endif //_WIN32 
+
+#endif //_WIN32/__APPLE__/__linux__
 
 
 InstanceCheck::InstanceCheck() {}
