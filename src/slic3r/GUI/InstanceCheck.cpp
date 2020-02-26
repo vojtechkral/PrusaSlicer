@@ -59,7 +59,8 @@ BOOL CALLBACK EnumWindowsProc(_In_ HWND   hwnd, _In_ LPARAM lParam) {
 
 namespace Slic3r {
 
-#if _WIN32
+#if _WIN32  ////////////////////////////////////////WIN/////////////////////////////////////////////////
+	
 bool InstanceCheck::check_with_message() const {
 	//Alternative method: create a mutex. cons: Will work only with versions creating this mutex
 	///*HANDLE*/ m_mutex = CreateMutex(NULL, TRUE, L"PrusaSlicer");
@@ -137,13 +138,15 @@ void InstanceCheck::send_message(const HWND hwnd) const {
 	SendMessage(hwnd, WM_COPYDATA, 0, (LPARAM)&data_to_send);
 }
 
-#elif defined(__APPLE__)
+#elif defined(__APPLE__)  ////////////////////////////////////////APPLE//////////////////////////////////////////////////
 
 bool InstanceCheck::check_with_message() const {
 	if(!get_lock()){
 	    std::cout<<"Process already running!"<< std::endl;  
+	    send_message();
 	    return true;
 	}
+	wrapper_mac->register_for_messages();
 	return false;
 }
 
@@ -165,11 +168,11 @@ int InstanceCheck::get_lock() const
   	return 1;
 }
 
-void InstanceCheck::send_message(const int pid) const {
-
+void InstanceCheck::send_message() const {
+	wrapper_mac->send_message();
 }
 
-#elif defined(__linux__)
+#elif defined(__linux__) ////////////////////////////////////////LINUX//////////////////////////////////////////////////
 void InstanceCheck::sig_handler(int signo)
 {
 	if (signo == SIGUSR1){
@@ -220,7 +223,7 @@ int InstanceCheck::get_lock() const
   	return 1;
 }
 
-std::string InstanceCheck::get_pid_string_by_name(std::string procName) const
+std::string InstanceCheck::get_pid_string_by_name(const std::string procName) const
 {
     int pid = -1;
     std::string pid_string = "";
@@ -278,11 +281,19 @@ void InstanceCheck::send_message(const int pid) const {
 
 }
 
-#endif //_WIN32/__APPLE__/__linux__
+#endif //_WIN32/__APPLE__/__linux__ ////////////////////////////////////////common//////////////////////////////////////////////////
 
 
-InstanceCheck::InstanceCheck() {}
-InstanceCheck::~InstanceCheck() {}
+InstanceCheck::InstanceCheck() 
+#if __APPLE__
+	wrapper_mac(new InstanceCheckMac())
+#endif
+{}
+InstanceCheck::~InstanceCheck() {
+	#if __APPLE__
+	delete wrapper_mac;
+#endif
+}
 
 void InstanceCheck::handle_message(const std::string message) const {
 
