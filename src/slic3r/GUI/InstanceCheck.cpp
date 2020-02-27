@@ -169,7 +169,7 @@ int InstanceCheck::get_lock() const
 }
 
 void InstanceCheck::send_message() const {
-	wrapper_mac->send_message();
+	wrapper_mac->send_message("");
 }
 
 #elif defined(__linux__) ////////////////////////////////////////LINUX//////////////////////////////////////////////////
@@ -286,7 +286,7 @@ void InstanceCheck::send_message(const int pid) const {
 
 InstanceCheck::InstanceCheck() 
 #if __APPLE__
-	wrapper_mac(new InstanceCheckMac())
+    :wrapper_mac(new InstanceCheckMac())
 #endif
 {}
 InstanceCheck::~InstanceCheck() {

@@ -10,8 +10,15 @@
 
 namespace Slic3r {
 
+#if __APPLE__
+    class InstanceCheckMac;
+#endif
+    
 class InstanceCheck
 {
+#if __APPLE__
+    friend class InstanceCheckMac;
+#endif
 public:
 	static InstanceCheck& instance_check()
 	{
@@ -57,7 +64,7 @@ class InstanceCheckMac{
  public:
   InstanceCheckMac();
   ~InstanceCheckMac();
-  void send_message(const td::string msg);
+  void send_message(const std::string msg);
   void register_for_messages();
 protected:
   void *m_mssngr;
