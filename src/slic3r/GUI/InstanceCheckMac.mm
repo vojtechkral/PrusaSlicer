@@ -9,26 +9,22 @@
 	return self;
 }
 
--(void)send_message
+-(void)send_message(NSString *)msg
 {
-	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"OtherPrusaSlicerTerminating" object:nil];
+	//[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"OtherPrusaSlicerTerminating" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"OtherPrusaSlicerTerminating" object:nil userInfo:[NSDictionary dictionaryWithObject:msg forKey:@"data"]]
 }
 
 -(void)add_observer
 {
-	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(someNotificationUpdate:) name:@"OtherPrusaSlicerTerminating" object:nil];
+	[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(message_update:) name:@"OtherPrusaSlicerTerminating" object:nil];
 }
 
 -(void)message_update:(NSNotification *)note
 {
 	NSLog(@"got message");
+	NSLog(note.data);
 }
-/*
-[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"HelloFromProcessOne" object:nil]
-[[NSDistributedNotificationCenter defaultCenter] postNotificationName:@"HelloFromProcessOne" object:nil userInfo:[NSDictionary dictionaryWithObject:@"some info here" forKey:@"data"]]
-
-[[NSDistributedNotificationCenter defaultCenter] addObserver:self selector:@selector(someNotificationUpdate:) name:@"HelloFromProcessOne" object:nil]
-*/
 
 @end
 
