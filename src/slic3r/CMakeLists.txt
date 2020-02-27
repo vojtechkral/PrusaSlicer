@@ -184,6 +184,7 @@ if (APPLE)
             GUI/RemovableDriveManagerMM.h
             GUI/Mouse3DHandlerMac.mm
             GUI/InstanceCheckMac.mm
+            GUI/InstanceCheckMac.h
         )
     FIND_LIBRARY(DISKARBITRATION_LIBRARY DiskArbitration)
 
