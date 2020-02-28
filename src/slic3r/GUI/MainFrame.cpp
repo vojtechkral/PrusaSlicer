@@ -482,6 +482,10 @@ void MainFrame::init_menubar()
             [this](wxCommandEvent&) { if (m_plater) m_plater->send_gcode(); }, "export_gcode", nullptr,
             [this](){return can_send_gcode(); }, this);
         m_changeable_menu_items.push_back(item_send_gcode);
+		wxMenuItem* item_export_gcode_to_sd = append_menu_item(export_menu, wxID_ANY, _(L("Export G-code to SD card / &Usb drive")) + dots + "\tCtrl+U", _(L("Export current plate as G-code to SD card / Flash drive")),
+			[this](wxCommandEvent&) { if (m_plater) m_plater->export_gcode(true); }, "export_gcode", nullptr,
+			[this]() {return can_export_gcode(); }, this);
+		m_changeable_menu_items.push_back(item_export_gcode_to_sd);
         export_menu->AppendSeparator();
         append_menu_item(export_menu, wxID_ANY, _(L("Export plate as &STL")) + dots, _(L("Export current plate as STL")),
             [this](wxCommandEvent&) { if (m_plater) m_plater->export_stl(); }, "export_plater", nullptr,
