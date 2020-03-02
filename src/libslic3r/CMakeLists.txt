@@ -76,6 +76,8 @@ add_library(libslic3r STATIC
     Format/PRUS.hpp
     Format/STL.cpp
     Format/STL.hpp
+    Format/SLArchive.hpp
+    Format/SLArchive.cpp
     GCode/Analyzer.cpp
     GCode/Analyzer.hpp
     GCode/ThumbnailData.cpp
@@ -209,6 +211,8 @@ add_library(libslic3r STATIC
     SLA/Raster.cpp
     SLA/RasterWriter.hpp
     SLA/RasterWriter.cpp
+    SLA/RasterToPolygon.hpp
+    SLA/RasterToPolygon.cpp
     SLA/ConcaveHull.hpp
     SLA/ConcaveHull.cpp
     SLA/Hollowing.hpp
